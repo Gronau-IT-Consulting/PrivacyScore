@@ -1,8 +1,8 @@
-- hosts: all
+- hosts: privacyscore_master
   become: true
-  become_user: root
   vars:
     ansible_ssh_pipelining: yes
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
     apt_file: /etc/apt/sources.list.d/google-chrome.list
   tasks:
     - name: Install apt packages
@@ -69,7 +69,7 @@
       git:
         repo: https://github.com/Gronau-IT-Consulting/PrivacyScore.git
         dest: /opt/privacyscore
-        version: master
+        version: Teamevent-Tallinnn
         accept_hostkey: yes
     - name: Create privacyscore user
       user:
@@ -113,13 +113,13 @@
         owner: privacyscore
         group: privacyscore
         mode: 0500
-    - name: Place systemd unit file for privacyscore-celery-slave
+    - name: Place systemd unit file for privacyscore-celery-master
       template:
-        src: templates/privacyscore-celery-slave.service
-        dest: /etc/systemd/system/privacyscore-celery-slave.service
-    - name: Enable and start celery slave service
+        src: templates/privacyscore-celery-master.service
+        dest: /etc/systemd/system/privacyscore-celery-master.service
+    - name: Enable and start celery master service
       service:
-        name: privacyscore-celery-slave
+        name: privacyscore-celery-master
         state: started
         enabled: yes
     - name: Create privacyscore .ssh directory
@@ -144,3 +144,10 @@
         dest: /opt/privacyscore
         version: Teamevent-Tallinnn
         accept_hostkey: yes
+    - name: Create Directory for static files
+      become: yes
+      file:
+        path: /var/www/privacyscore.org
+        state: directory
+        mode: 0755
+        owner: privacyscore

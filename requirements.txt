@@ -15,3 +15,5 @@ tldextract
 toposort
 url_normalize
 pygments
+setuptools
+uwsgi

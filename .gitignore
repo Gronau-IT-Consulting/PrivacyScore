@@ -4,7 +4,8 @@ privacyscore/settings.py
 venv/
 tests/vendor
 raw_data
-
+ansible/id_rsa
+id_rsa
 # home dir
 .bash_history
 .bash_profile

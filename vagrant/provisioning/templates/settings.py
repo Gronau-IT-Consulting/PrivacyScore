@@ -26,7 +26,7 @@ SECRET_KEY = '{{ lookup('passwordstore', 'privacyscore.org/settings/SECRET_KEY')
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    'ps-gronau-it-master',
+    'ps-gronau-it-master.local',
 ]
 
 
@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'privacyscore.wsgi.application'
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'HOST': 'localhost',
+    'HOST': 'ps-gronau-it-db.local',
     'USER': 'privacyscore',
     'PASSWORD': 'privacyscore',
     'NAME': 'privacyscore',

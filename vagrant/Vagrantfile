@@ -1,0 +1,82 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+  config.vm.provider "virtualbox" do |v|
+    v.linked_clone = true
+    v.memory = 1024
+    v.cpus = 1
+  end
+  # Privacyscore Master
+  config.vm.define "privacyscore_master", primary: true do |privacyscore_master|
+    privacyscore_master.vm.box = "ubuntu/xenial64"
+    privacyscore_master.vm.network "private_network", type: "dhcp"
+    privacyscore_master.vm.hostname = "ps-gronau-it-master"
+    privacyscore_master.vm.provision :ansible do |ansible|
+      ansible.playbook = "provisioning/deploy_master.yml"
+    end
+  end
+  config.vm.define "privacyscore_slave" do |privacyscore_slave|
+    privacyscore_slave.vm.box = "ubuntu/xenial64"
+    privacyscore_slave.vm.network "private_network", type: "dhcp"
+    privacyscore_slave.vm.hostname = "ps-gronau-it-slave-01"
+  end
+  config.vm.define "db" do |db|
+    db.vm.box = "ubuntu/xenial64"
+    db.vm.network "private_network", type: "dhcp"
+    db.vm.provider "virtualbox" do |d|
+      d.memory = 4096
+      d.cpus = 2
+    end   
+    db.vm.hostname = "ps-gronau-it-db"
+  end
+  config.vm.define "rabbitmq" do |rabbitmq|
+    rabbitmq.vm.box = "ubuntu/bionic64"
+    rabbitmq.vm.network "private_network", type: "dhcp"
+    rabbitmq.vm.hostname = "ps-gronau-it-rabbitmq"
+  end
+  config.vm.define "redis" do |redis|
+    redis.vm.box = "ubuntu/xenial64"
+    redis.vm.network "private_network", type: "dhcp"
+    redis.vm.hostname = "ps-gronau-it-redis"
+  end
+  config.vm.define "memcache" do |memcache|
+    memcache.vm.box = "ubuntu/xenial64"
+    memcache.vm.network "private_network", type: "dhcp"
+    memcache.vm.hostname = "ps-gronau-it-memcache"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update 
+    apt-get install -y avahi-daemon libnss-mdns python-minimal
+  SHELL
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "provisioning/playbook.yml"
+    ansible.groups = {
+      "master" => ["privacyscore_master"],
+      "slaves" => ["privacyscore_slave"],
+      "dbs" => ["db"],
+      "redis-servers" => ["redis"], 
+      "privacyscore:children" => ["master", "slaves"],
+      "master:vars" => {"is_master" => "True",
+                        "is_slave" => "False",
+                        "testssl_mx_remote_host" => "None"},
+      "slaves:vars" => {"is_master" => "False",
+                        "is_slave" => "True",
+                        "testssl_mx_remote_host" => "None"},
+      "rabbitmq-servers" => ["rabbitmq"],
+      "memcache-servers" => ["memcache"]
+    }
+  end
+end

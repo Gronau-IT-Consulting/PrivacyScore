@@ -1,1 +1,1 @@
-ps-bamberg-slave-[000:009] is_master=False is_slave=True testssl_mx_remote_host=None
+ps-gronau-it-slave-[001:003] ansible_user=root is_master=False is_slave=True testssl_mx_remote_host=None

@@ -42,6 +42,11 @@ This describes the steps that are necessary to deploy the code to a new machine.
   * svs/svs-ps01/rabbitmq/privacyscore
   * privacyscore.org/sentry
 
+When you use fresh Ubuntu 16.04 Hosts without python, run
+
+    ansible-playbook -i ansible/install_python_ubuntu_1604.yml
+    ansible-playbook -i ansible/basic_ubuntu_requirements.yml
+
 Then deploy the slave using
 
     ansible-playbook -i ansible/inventory -K ansible/deploy_slave.yml

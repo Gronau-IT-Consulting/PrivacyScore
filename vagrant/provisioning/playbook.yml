@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: privacyscore
   become: true
   become_user: root
   vars:
@@ -45,7 +45,7 @@
       apt: update_cache=yes
       when: google_apt_exists.rc == 1
     - name: Install Google Chrome
-      apt: pkg=google-chrome-stable state=installed
+      apt: pkg=google-chrome-stable state=present
     - name: Enable NTP service
       service:
         name: ntp
@@ -69,7 +69,7 @@
       git:
         repo: https://github.com/Gronau-IT-Consulting/PrivacyScore.git
         dest: /opt/privacyscore
-        version: master
+        version: Teamevent-Tallinnn
         accept_hostkey: yes
     - name: Create privacyscore user
       user:
@@ -113,13 +113,13 @@
         owner: privacyscore
         group: privacyscore
         mode: 0500
-    - name: Place systemd unit file for privacyscore-celery-slave
+    - name: Place systemd unit file for privacyscore-celery-master
       template:
-        src: templates/privacyscore-celery-slave.service
-        dest: /etc/systemd/system/privacyscore-celery-slave.service
-    - name: Enable and start celery slave service
+        src: templates/privacyscore-celery-master.service
+        dest: /etc/systemd/system/privacyscore-celery-master.service
+    - name: Enable and start celery master service
       service:
-        name: privacyscore-celery-slave
+        name: privacyscore-celery-master
         state: started
         enabled: yes
     - name: Create privacyscore .ssh directory
@@ -144,3 +144,64 @@
         dest: /opt/privacyscore
         version: Teamevent-Tallinnn
         accept_hostkey: yes
+    - name: Create Directory for static files
+      become: yes
+      file:
+        path: /var/www/privacyscore.org
+        state: directory
+        mode: 0755
+        owner: privacyscore
+    - name: Install nginx
+      apt:
+        name: nginx
+    - name: Create nginx configuration
+      template:
+        src: templates/nginx.conf
+        dest: /etc/nginx/sites-enabled/privacyscore.conf
+      notify:
+        - restart nginx
+    - name: Enable nginx Service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted
+- hosts: dbs
+  vars_files:
+    - vars/main.yml
+  roles:
+    - role: geerlingguy.postgresql
+      become: yes
+- hosts: rabbitmq-servers
+  become: true
+  become_method: sudo
+  vars:
+    rabbitmq_version: 3.6
+
+  tasks:
+  - name: install package
+    apt: name={{ item }} update_cache=yes state=installed
+    with_items:
+      - rabbitmq-server
+
+  - name: enable rabbitmq plugins
+    rabbitmq_plugin: names=rabbitmq_management,rabbitmq_tracing,rabbitmq_federation state=enabled
+    notify:
+    - restart rabbitmq
+
+  - name: add users
+    rabbitmq_user: user={{item}} password=privacyscore tags=administrator,{{item}} vhost=/ configure_priv=.* write_priv=.* read_priv=.* state=present
+    with_items:
+    - privacyscore
+
+  - name: remove default guest user
+    rabbitmq_user: user=guest state=absent
+
+  - name: ensure vhost /test is present
+    rabbitmq_vhost: name=/test state=present
+
+  handlers:
+  - name: restart rabbitmq
+    service: name=rabbitmq-server state=restarted
