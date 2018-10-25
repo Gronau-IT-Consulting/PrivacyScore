@@ -205,3 +205,29 @@
   handlers:
   - name: restart rabbitmq
     service: name=rabbitmq-server state=restarted
+
+- hosts: redis
+  become: true
+  become_method: sudo
+  tasks:
+  - name: install package redis
+    apt: name={{ item }} update_cache=yes state=installed
+    with_items:
+      - redis-server
+  - name: Enable nginx Service
+    service:
+      name: redis-server
+      state: started
+      enabled: yes
+  - name: Bind Redis to 0.0.0.0
+    lineinfile:
+      path: /etc/redis/redis.conf
+      regexp: '^bind'
+      line: 'bind 0.0.0.0'
+    notify:
+      - restart redis-server
+  handlers:
+  - name: restart redis-server
+    service: name=redis-server state=restarted
+
+
