@@ -22,3 +22,4 @@ id_rsa
 ansible/files/id_rsa
 
 *.mo
+vagrant/provisioning/id_rsa
