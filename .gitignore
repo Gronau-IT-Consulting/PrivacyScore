@@ -1,6 +1,7 @@
 *.pyc
 *.retry
 .vagrant
+*.log
 privacyscore/settings.py
 venv/
 tests/vendor
