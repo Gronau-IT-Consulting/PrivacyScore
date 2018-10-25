@@ -165,6 +165,172 @@
         name: nginx
         state: started
         enabled: yes
+    - name: Refresh PrivacyScore git repository
+      become: yes
+      become_user: privacyscore
+      git:
+        repo: https://github.com/Gronau-IT-Consulting/PrivacyScore.git
+        dest: /opt/privacyscore
+        version: Teamevent-Tallinnn
+    - name: Update settings
+      blockinfile:
+        path: /opt/privacyscore/privacyscore/settings.py
+        block: |
+          LOGIN_REDIRECT_URL = '/'
+          LOGOUT_REDIRECT_URL = '/'
+
+          from kombu import Exchange, Queue
+          CELERY_TIMEZONE = TIME_ZONE
+          CELERY_TASK_SERIALIZER = 'msgpack'
+          CELERY_RESULT_SERIALIZER = 'msgpack'
+          CELERY_ACCEPT_CONTENT = ['msgpack']
+          CELERY_BROKER_URL = 'amqp://privacyscore:privacyscore@ps-gronau-it-rabbitmq.local:5672//'
+          CELERY_RESULT_BACKEND = 'redis://ps-gronau-it-redis.local:6379/0'
+          CELERY_DEFAULT_QUEUE = 'master'
+          CELERY_QUEUES = (
+              Queue('master', Exchange('master'), routing_key='master'),
+              Queue('slave', Exchange('slave'), routing_key='slave'),
+          )
+
+
+          from datetime import timedelta
+          SCAN_REQUIRED_TIME_BEFORE_NEXT_SCAN = timedelta(minutes=28)
+          SCAN_SUITE_TIMEOUT_SECONDS = 420
+          SCAN_TOTAL_TIMEOUT = timedelta(hours=2)
+          SCAN_TEST_BASEPATH = os.path.join(BASE_DIR, 'tests')
+          SCAN_LISTS_PER_PAGE = 30
+
+          # The base modules containing the test suites. You usually do not want to
+          # change this.
+          TEST_SUITES_BASEMODULES = [
+              'privacyscore.test_suites',
+          ]
+
+          # The list of the test names to use. Test names may not be used multiple times.
+          # See the example test suite for documentation of the test module interface.
+          SCAN_TEST_SUITES = [
+              ('network', {
+                  'country_database_path': os.path.join(
+                      SCAN_TEST_BASEPATH, 'vendor/geoip/GeoLite2-Country.mmdb'),
+              }),
+              ('openwpm', {
+                  'scan_basedir': '/tmp/openwpm-scans',
+                  'virtualenv_path': os.path.join(BASE_DIR, 'tests/vendor/OpenWPM/.pyenv'),
+              }),
+              ('serverleak', {}),
+              ('testssl_https', {}),
+              ('testssl_mx', {
+                {% if testssl_mx_remote_host %}
+                'remote_host': '{{ testssl_mx_remote_host }}',
+                {% endif %}
+              }),
+          ]
+
+          RAW_DATA_UNCOMPRESSED_TYPES = [
+              'image/png',
+              'image/jpeg',
+          ]
+          RAW_DATA_DB_MAX_SIZE = 4000
+          RAW_DATA_DIR = os.path.join(BASE_DIR, 'raw_data')
+          RAW_DATA_DELETE_AFTER = timedelta(days=30)
+
+          SCAN_SCHEDULE_DAEMON_SLEEP = 60
+
+          SCAN_LISTS_PER_PAGE = 30
+
+          INSTALLED_APPS.append('raven.contrib.django.raven_compat')
+
+    - name: Install PrivacyScore pip requirements
+      become: yes
+      become_user: privacyscore
+      pip:
+        requirements: /opt/privacyscore/requirements.txt
+        virtualenv: /opt/privacyscore/.pyenv
+    - name: Install raven
+      become: yes
+      become_user: privacyscore
+      pip:
+        name: raven
+        virtualenv: /opt/privacyscore/.pyenv
+    - name: Refresh privacyscanner git repository
+      become: yes
+      become_user: privacyscore
+      git:
+        repo: https://github.com/Gronau-IT-Consulting/privacyscanner.git
+        dest: /opt/privacyscore/privacyscanner
+        version: master
+    - name: Install privacyscanner pip requirements
+      become: yes
+      become_user: privacyscore
+      pip:
+        name: /opt/privacyscore/privacyscanner
+        virtualenv: /opt/privacyscore/.pyenv
+    - name: Update privacyscanner dependencies
+      become: yes
+      become_user: privacyscore
+      command: privacyscanner update_dependencies
+      environment:
+        PATH: /opt/privacyscore/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        VIRTUAL_ENV: /opt/privacyscore/.pyenv
+    - name: Migrate database
+      when: is_master
+      become: yes
+      become_user: privacyscore
+      command: /opt/privacyscore/manage.py migrate
+      environment:
+        PATH: /opt/privacyscore/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        VIRTUAL_ENV: /opt/privacyscore/.pyenv
+    - name: Collect static files
+      when: is_master
+      become: yes
+      become_user: privacyscore
+      command: /opt/privacyscore/manage.py collectstatic --no-input
+      environment:
+        PATH: /opt/privacyscore/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        VIRTUAL_ENV: /opt/privacyscore/.pyenv
+    - name: Place systemd unit file for privacyscore-celery-master
+      when: is_master
+      template:
+        src: privacyscore-celery-master.service
+        dest: /etc/systemd/system/privacyscore-celery-master.service
+    - name: Place systemd unit file for privacyscore-celery-slave
+      when: is_slave
+      template:
+        src: privacyscore-celery-slave.service
+        dest: /etc/systemd/system/privacyscore-celery-slave.service
+    - name: Place systemd unit file for privacyscore
+      when: is_master
+      template:
+        src: privacyscore.service
+        dest: /etc/systemd/system/privacyscore.service
+    - name: Restart privacyscore.service
+      when: is_master
+      service: name=privacyscore state=restarted
+    - name: Restart privacyscore-celery-master.service
+      when: is_master
+      service: name=privacyscore-celery-master state=restarted
+    - name: Restart privacyscore-celery-slave.service
+      when: is_slave
+      service: name=privacyscore-celery-slave state=restarted
+    - name: Refresh vendor/testssl
+      when: is_slave
+      become: yes
+      become_user: privacyscore
+      git:
+        repo: https://github.com/drwetter/testssl.sh.git
+        dest: /opt/privacyscore/tests/vendor/testssl.sh
+        version: 47409a32d687355739543890c1ddc70a8539d071
+    - name: Create vendor/HSTSPreload if it does not exist
+      file:
+        path: /opt/privacyscore/tests/vendor/HSTSPreload/
+        owner: privacyscore
+        group: privacyscore
+        mode: 0700
+        state: directory
+    - name: Download HSTS Preload lists
+      shell: wget https://chromium.googlesource.com/chromium/src/net/+/master/http/transport_security_state_static.json?format=TEXT -O - | base64 -d | egrep -v "^([ ]*\/\/|$)" > "/opt/privacyscore/tests/vendor/HSTSPreload/transport_security_state_static"
+      args:
+        executable: /bin/bash  
   handlers:
     - name: restart nginx
       service: name=nginx state=restarted
@@ -231,3 +397,4 @@
     service: name=redis-server state=restarted
 
 
+    

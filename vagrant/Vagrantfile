@@ -22,9 +22,6 @@ Vagrant.configure("2") do |config|
     privacyscore_master.vm.box = "ubuntu/xenial64"
     privacyscore_master.vm.network "private_network", type: "dhcp"
     privacyscore_master.vm.hostname = "ps-gronau-it-master"
-    privacyscore_master.vm.provision :ansible do |ansible|
-      ansible.playbook = "provisioning/deploy_master.yml"
-    end
   end
   config.vm.define "privacyscore_slave" do |privacyscore_slave|
     privacyscore_slave.vm.box = "ubuntu/xenial64"
