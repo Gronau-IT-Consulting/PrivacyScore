@@ -5,7 +5,7 @@ html {
 
 body {
     color: #384452;
-    font-family: 'Lato', sans-serif;
+    font-family: 'roboto', sans-serif;
     font-weight: 400;
     margin-bottom:280px; /* for footer */
 }
@@ -29,8 +29,8 @@ h2 {
 
 .navbar-default {
     background-color: rgb(255, 255, 255);
-    border-color: transparent;
-    box-shadow: 1px 2px 4px rgba(0, 0, 0, .5);
+    /*border-color: transparent;*/
+    /*box-shadow: 1px 2px 4px rgba(0, 0, 0, .5);*/
 }
 
 .navbar-default .navbar-nav > li > a:hover {
@@ -93,14 +93,15 @@ h2 {
 
 /* start page */
 .well {
-    background:#2c3e50;
+    background-color: transparent;
     text-align:center;
     padding:10px 0 50px 0;
-    color:#fff;
+    border: 0px
+/*    color:#fff;*/
 }
 
 .well h2 {
-    color:#18bc9c;
+    /*color:#7e9fbf;*/
     font-size:40px;
     font-weight:700;
     font-family: "Raleway", sans-serif;
@@ -109,10 +110,24 @@ h2 {
 .btn-well {
     width:100%;
     margin:10px 0 15px 0;
+    /*color: #00A000;*/
+/*    background-color: #0000FF;*/
 }
 
 .btn-scan {
-    color:#000;
+    color: white;
+    background-color: #284362;
+    border: 0px;
+}
+:hover .btn-scan {
+    color: white;
+    background-color: #284362;
+    border: 0px;
+}
+:active .btn-scan  {
+    color: white !important;
+    background-color: #284362 !important;
+    border: 0px;
 }
 
 .scan-single {
@@ -249,7 +264,7 @@ a.spotlight-caption {
 }
 
 /*
- * improvements box 
+ * improvements box
  */
 div.improvements {
     border: solid 1px #F4D35E;
@@ -306,7 +321,6 @@ div.improvements {
 /*
  * Ranking
  */
-
 .category-header {
     width:70px;
 }
@@ -314,7 +328,6 @@ div.improvements {
 /*
  * Browse lists
  */
-
 .browse-list-item {
     margin-bottom: 1.5em;
     display:block;
@@ -324,11 +337,9 @@ div.improvements {
     padding: 0.7em 1.5em 1.5em 1.5em;
 }
 
-
 /*
  * Single site result
 */
-
 panel-group .panel {
     border-radius: 0;
     box-shadow: none;
@@ -404,4 +415,30 @@ ul.errorlist li {
 
 .inline {
   display: inline !important;
+}
+
+.gicc-background {
+    background-color: transparent !important;
+    border: 0px !important;
+    /*box-shadow: none !important;*/
+    /*border-color: transparent !important;*/
+    /*borderground-color: transparent !important;*/
+}
+
+.gicc-background-scan-box {
+    background-image: url('../gicc/white_image.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;height: 100%;
+}
+.gicc-body {
+    background-image: url('../gicc/background.jpg');
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100%;
+}
+
+.gicc-text {
+    color: #e2ebef !important;
 }
