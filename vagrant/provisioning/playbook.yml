@@ -138,6 +138,14 @@
         home: /opt/privacyscore
         shell: /bin/bash
         system: yes
+    - name: Creates directory raw_data
+      file:
+        path: /opt/privacyscore/raw_data
+        state: directory
+        owner: privacyscore
+        group: privacyscore
+        mode: 0775
+
     - name: Set owner of privacyscore directory
       file:
         path: /opt/privacyscore
