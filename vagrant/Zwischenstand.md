@@ -4,10 +4,10 @@ Aktueller Stand nach 3 Tagen prototyping.
 - Vagrant mit pass lookup plugin und virtualbox
 - Ansible 2.7 oder neuer
 - Python 3
+- ansible-galaxy install geerlingguy.postgresql
 ## Lokal Aufsetzen
 - Git auschecken
 - Readme.md vom Projekt beachten (also password Stores anlegen und SSH Key an die richtigen stellen legen. `vagrant/provisioning/id_rsa`)
-- vagrant up mehrfach ausführen (da gibts am Anfang immer noch fehler...)
 - Im Lokalen Browser auf dem Host http://ps-gronau-it-master.local aufrufen
 
 ## ToDo
