@@ -13,5 +13,13 @@ Aktueller Stand nach 3 Tagen prototyping.
 ## ToDo
 Jede Menge...
 Aktuell läuft z.B. das Verarbeitung der Reports noch nicht richtig. 
+- Zuerst sollte man das Ansible Zeug ohne Fehler und Warnings gleich beim ersten vagrant up durchlaufen lassen können. 
+- Dann muss man sich genauer anschauen, warum die Verarbeitung der Reports nicht läuft. 
+- Dann muss man z.B. Terraform verwenden und mal gegen VMware und AWS deployen
+- Theming und verbesserung der ganzen Anwendung muss dann auch folgen. 
+- Ansible in saubere Rollen überführen und Datenhaltung separieren
+- Letsencrypt ermöglichen
+- URL dynamisch machen. 
+
 
 
