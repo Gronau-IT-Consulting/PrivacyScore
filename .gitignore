@@ -5,7 +5,7 @@
 privacyscore/settings.py
 venv/
 tests/vendor
-raw_data
+raw_data/*
 ansible/id_rsa
 id_rsa
 # home dir
