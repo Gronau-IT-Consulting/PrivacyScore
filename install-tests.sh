@@ -16,7 +16,7 @@ privacyscanner update_dependencies
 popd
 
 # testssl.sh
-git clone https://github.com/drwetter/testssl.sh.git tests/vendor/testssl.sh
+git clone --depth 1 https://github.com/Gronau-IT-Consulting/testssl.sh.git
 
 # HSTS Preload List
 mkdir tests/vendor/HSTSPreload
