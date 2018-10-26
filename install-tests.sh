@@ -9,7 +9,7 @@ mkdir -p tests/vendor/geoip
 wget --quiet -O- http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz | gunzip > tests/vendor/geoip/GeoLite2-Country.mmdb
 
 # privacyscanner
-git clone https://github.com/PrivacyScore/privacyscanner.git
+git clone -b feature/without-raven https://github.com/Gronau-IT-Consulting/privacyscanner.git
 pushd privacyscanner
 pip install .
 privacyscanner update_dependencies
